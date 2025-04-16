@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pokémon Battle</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f8ff;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    #battlefield {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      margin-top: 30px;
+      padding: 20px;
+    }
+
+    .pokemon {
+      width: 150px;
+    }
+
+    .info {
+      margin-top: 10px;
+    }
+
+    .health-bar {
+      width: 150px;
+      height: 20px;
+      background-color: #ccc;
+      border: 1px solid #333;
+      margin: 5px auto;
+    }
+
+    .health {
+      height: 100%;
+      background-color: #4CAF50;
+    }
+
+    #moves {
+      margin-top: 20px;
+    }
+
+    .move-btn {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #ffcc00;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .move-btn:hover {
+      background-color: #ffb300;
+    }
+
+    #log {
+      margin-top: 30px;
+      max-width: 80%;
+      margin-left: auto;
+      margin-right: auto;
+      font-size: 1.1rem;
+    }
+
+    #endMessage {
+      margin-top: 20px;
+      font-size: 1.8rem;
+      color: #d32f2f;
+    }
+
+    #playAgain {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #playAgain:hover {
+      background-color: #388e3c;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Pokémon Battle!</h1>
+
+  <div id="battlefield">
+    <div>
+      <img id="playerImg" class="pokemon" src="">
+      <div class="info">
+        <div id="playerName"></div>
+        <div class="health-bar"><div id="playerHP" class="health"></div></div>
+      </div>
+    </div>
+
+    <div>
+      <img id="enemyImg" class="pokemon" src="">
+      <div class="info">
+        <div id="enemyName"></div>
+        <div class="health-bar"><div id="enemyHP" class="health"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="moves"></div>
+
+  <div id="log"></div>
+  <div id="endMessage"></div>
+  <button id="playAgain" style="display: none;">Play Again</button>
+
+  <script>
+    const pokemons = [
+      { name: "Pikachu", url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" },
+      { name: "Charmander", url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png" },
+      { name: "Squirtle", url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png" },
+      { name: "Bulbasaur", url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png" },
+      { name: "Eevee", url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png" }
+    ];
+
+    const movePool = [
+      { name: "Thunderbolt", damage: 20 },
+      { name: "Quick Attack", damage: 15 },
+      { name: "Tackle", damage: 10 },
+      { name: "Ember", damage: 18 },
+      { name: "Water Gun", damage: 18 },
+      { name: "Vine Whip", damage: 18 },
+      { name: "Scratch", damage: 12 },
+      { name: "Bite", damage: 16 },
+      { name: "Flamethrower", damage: 22 }
+    ];
+
+    let player, enemy;
+    let playerHP = 100, enemyHP = 100;
+
+    function getRandomMoves() {
+      return [...movePool].sort(() => 0.5 - Math.random()).slice(0, 3);
+    }
+
+    function getRandomPokemon() {
+      return pokemons[Math.floor(Math.random() * pokemons.length)];
+    }
+
+    function updateHealthBars() {
+      document.getElementById('playerHP').style.width = `${playerHP}%`;
+      document.getElementById('enemyHP').style.width = `${enemyHP}%`;
+    }
+
+    function logMessage(msg) {
+      const log = document.getElementById('log');
+      log.innerHTML = msg + "<br>" + log.innerHTML;
+    }
+
+    function endGame(winner) {
+      document.getElementById('endMessage').textContent = winner + " wins!";
+      document.getElementById('playAgain').style.display = 'inline-block';
+      document.querySelectorAll('.move-btn').forEach(btn => btn.disabled = true);
+    }
+
+    function enemyTurn() {
+      if (enemyHP <= 0) return;
+
+      const move = getRandomMoves()[0];
+      playerHP -= move.damage;
+      if (playerHP < 0) playerHP = 0;
+
+      logMessage(`Enemy used ${move.name}! You took ${move.damage} damage.`);
+      updateHealthBars();
+
+      if (playerHP <= 0) {
+        endGame(enemy.name);
+      }
+    }
+
+    function startBattle() {
+      player = getRandomPokemon();
+      enemy = getRandomPokemon();
+      while (enemy.name === player.name) {
+        enemy = getRandomPokemon();
+      }
+
+      const playerMoves = getRandomMoves();
+
+      playerHP = 100;
+      enemyHP = 100;
+      updateHealthBars();
+
+      document.getElementById('playerName').textContent = player.name;
+      document.getElementById('enemyName').textContent = enemy.name;
+      document.getElementById('playerImg').src = player.url;
+      document.getElementById('enemyImg').src = enemy.url;
+      document.getElementById('endMessage').textContent = '';
+      document.getElementById('log').innerHTML = '';
+      document.getElementById('playAgain').style.display = 'none';
+
+      const movesDiv = document.getElementById('moves');
+      movesDiv.innerHTML = '';
+      playerMoves.forEach(move => {
+        const btn = document.createElement('button');
+        btn.textContent = `${move.name} (-${move.damage})`;
+        btn.classList.add('move-btn');
+        btn.onclick = () => {
+          enemyHP -= move.damage;
+          if (enemyHP < 0) enemyHP = 0;
+          logMessage(`You used ${move.name}! Enemy took ${move.damage} damage.`);
+          updateHealthBars();
+          if (enemyHP <= 0) {
+            endGame(player.name);
+          } else {
+            setTimeout(enemyTurn, 800);
+          }
+        };
+        movesDiv.appendChild(btn);
+      });
+    }
+
+    document.getElementById('playAgain').addEventListener('click', startBattle);
+
+    // Start first game
+    startBattle();
+  </script>
+</body>
+</html>
